@@ -81,6 +81,100 @@ export const PLANTS = [
     imageNatural: { w: 800, h: 600 }
   },
 
+  // === 七品药材(混元3D 生成) ===
+  {
+    id: 'qixing_lingen',
+    name: '七星灵根',
+    grade: 7,
+    type: 'plant',
+    description: '北斗七星之精所化灵根,通体晶莹,七星环列,食之可通神识、窥天象。',
+    iconShape: 'root',
+    geomShape: 'glb-model',
+    modelFile: '/models/七星灵根.glb',
+    image: '/herb/七星灵根.png',
+    colorHex: '#4FC3F7',
+    accentHex: '#1A237E',
+    fxColors: ['#4FC3F7', '#7FDBFF', '#FFD700', '#FFFFFF', '#B3E5FC', '#1A237E'],
+    imageNatural: { w: 800, h: 600 }
+  },
+
+  // === 八品药材(混元3D 生成) ===
+  {
+    id: 'fenghuang_cao',
+    name: '凤凰草',
+    grade: 8,
+    type: 'plant',
+    description: '形如凤凰展翅,叶尖带火,生于南方火山,食之可浴火重生。',
+    iconShape: 'grass',
+    geomShape: 'glb-model',
+    modelFile: '/models/凤凰草.glb',
+    image: '/herb/凤凰草.png',
+    colorHex: '#FF4500',
+    accentHex: '#8B0000',
+    fxColors: ['#FF4500', '#FF6B35', '#FFD700', '#FF8C00', '#FFFFFF', '#8B0000'],
+    imageNatural: { w: 800, h: 600 }
+  },
+  {
+    id: 'xuanbing_lan',
+    name: '玄冰兰',
+    grade: 8,
+    type: 'plant',
+    description: '千年寒冰所化之兰,叶如冰晶,触之彻骨,食之可御万古寒气。',
+    iconShape: 'lotus',
+    geomShape: 'glb-model',
+    modelFile: '/models/玄冰兰.glb',
+    image: '/herb/玄冰兰.png',
+    colorHex: '#5BC0EB',
+    accentHex: '#0A4A6B',
+    fxColors: ['#5BC0EB', '#A0E0FF', '#FFFFFF', '#7FDBFF', '#C8E8FF', '#0A4A6B'],
+    imageNatural: { w: 800, h: 600 }
+  },
+  {
+    id: 'jiuqu_yulu',
+    name: '九曲玉露',
+    grade: 8,
+    type: 'plant',
+    description: '九转回环的玉露灵草,通体碧透,叶间凝露,饮之可增百年修为。',
+    iconShape: 'vine',
+    geomShape: 'glb-model',
+    modelFile: '/models/九曲玉露.glb',
+    image: '/herb/九曲玉露.png',
+    colorHex: '#2EC4B6',
+    accentHex: '#0A6B5E',
+    fxColors: ['#2EC4B6', '#7FDBDA', '#A8E6CF', '#FFFFFF', '#9FE2BF', '#0A6B5E'],
+    imageNatural: { w: 800, h: 600 }
+  },
+  {
+    id: 'qiannian_xuelian',
+    name: '千年雪莲',
+    grade: 8,
+    type: 'plant',
+    description: '生于千年雪峰之巅,通体雪白,瓣如冰雕,食之可解百毒、净凡胎。',
+    iconShape: 'lotus',
+    geomShape: 'glb-model',
+    modelFile: '/models/千年雪莲.glb',
+    image: '/herb/千年雪莲.png',
+    colorHex: '#E8F4F8',
+    accentHex: '#A8C0C8',
+    fxColors: ['#E8F4F8', '#C8D8E8', '#88A8C8', '#FFFFFF', '#DDEEFF', '#A8C0C8'],
+    imageNatural: { w: 800, h: 600 }
+  },
+  {
+    id: 'ziyang_shen',
+    name: '紫阳参',
+    grade: 8,
+    type: 'plant',
+    description: '紫气东来所化之人参,通体紫金,根须如丝,食之可窥天机、增寿元。',
+    iconShape: 'root',
+    geomShape: 'glb-model',
+    modelFile: '/models/紫阳参.glb',
+    image: '/herb/紫阳参.png',
+    colorHex: '#9D4EDD',
+    accentHex: '#5A189A',
+    fxColors: ['#9D4EDD', '#7B2CBF', '#D0A040', '#E0AAFF', '#FFFFFF', '#5A189A'],
+    imageNatural: { w: 800, h: 600 }
+  },
+
   // === 旧的 3 品垂藤草(混元3D 生成) ===
   {
     id: 'chui_teng_cao',
