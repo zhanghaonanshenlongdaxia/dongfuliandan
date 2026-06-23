@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>洞府炼丹</title>
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/data/ingredients/2d/codex.css" />
+</head>
+<body>
+  <!-- 主容器:左边 three.js canvas,右边 DOM 侧边栏 -->
+  <div id="app">
+    <!-- 3D 画布(由 main.js 注入) -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- 右侧 UI 侧边栏 -->
+    <aside id="sidebar">
+
+      <!-- 顶部按钮:图鉴 -->
+      <button id="btn-codex" class="codex-btn" type="button">📚 药材图鉴 (27种)</button>
+
+      <!-- 顶部:已收丹药库存条 -->
+      <section id="pills-bar" class="panel">
+        <h3>已收丹药</h3>
+        <div id="pills-list" class="chips"></div>
+      </section>
+
+      <!-- 丹方簿 -->
+      <section id="recipe-book" class="panel">
+        <h3>丹方簿</h3>
+        <div id="recipe-list"></div>
+      </section>
+
+      <!-- 原料栏 -->
+      <section id="ingredient-list" class="panel">
+        <h3>原料</h3>
+        <div id="ingredients-grid"></div>
+      </section>
+
+      <!-- 炉况 -->
+      <section id="furnace-status" class="panel">
+        <h3>炉况</h3>
+        <div id="state-text" class="state-idle">待开炉</div>
+        <div id="progress-wrap" class="hidden">
+          <div id="progress-bar"><div id="progress-fill"></div></div>
+          <div id="progress-time">0.0s</div>
+        </div>
+        <div id="added-chips" class="chips"></div>
+        <div class="actions">
+          <button id="btn-start" class="btn-primary" disabled>开炉炼制</button>
+          <button id="btn-reset" class="btn-secondary">清空</button>
+        </div>
+      </section>
+
+      <!-- 收丹结果 -->
+      <section id="result-panel" class="panel hidden">
+        <h3 id="result-title">成丹</h3>
+        <div id="result-body"></div>
+        <div class="actions">
+          <button id="btn-collect" class="btn-primary">收取</button>
+        </div>
+      </section>
+
+    </aside>
+  </div>
+
+  <!-- 入口脚本(ES Module 方式加载) -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

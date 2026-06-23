@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>垂藤草 — 程序复刻对比</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'STKaiti', 'KaiTi', serif;
+      background: #0a0604;
+      color: #d4af37;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 { text-align: center; margin-bottom: 16px; font-size: 24px; text-shadow: 0 0 8px rgba(212, 175, 55, 0.5); }
+    .container { display: flex; gap: 16px; max-width: 1400px; margin: 0 auto; }
+    .panel {
+      flex: 1;
+      background: #1a0e08;
+      border: 1px solid #b8860b;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .panel h2 { color: #d4af37; font-size: 16px; margin-bottom: 8px; }
+    .panel canvas, .panel img { width: 100%; height: auto; border: 1px solid #3a2a18; border-radius: 4px; display: block; }
+    .controls { text-align: center; margin: 16px 0; }
+    .controls button {
+      background: linear-gradient(180deg, #5a3a1a, #3a2010);
+      border: 1px solid #d4af37;
+      color: #d4af37;
+      padding: 8px 20px;
+      margin: 0 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+    .controls button:hover { background: linear-gradient(180deg, #7a4a2a, #5a3a1a); }
+    .seed { color: #8a7a5a; font-size: 12px; margin-left: 12px; }
+  </style>
+</head>
+<body>
+  <h1>垂藤草 — 原图 vs 程序复刻</h1>
+  <div class="container">
+    <div class="panel">
+      <h2>原图(豆包 AI 生成)</h2>
+      <img src="/herb/垂藤草.png" alt="原图" />
+    </div>
+    <div class="panel">
+      <h2>程序复刻(canvas 绘制)</h2>
+      <canvas id="cv" width="600" height="600"></canvas>
+    </div>
+  </div>
+  <div class="controls">
+    <button id="btn-regen">🎲 重新生成</button>
+    <button id="btn-stylize">🎨 改风格</button>
+    <span class="seed" id="seed-display">seed: 1</span>
+  </div>
+  <script type="module" src="./draw.js"></script>
+</body>
+</html>

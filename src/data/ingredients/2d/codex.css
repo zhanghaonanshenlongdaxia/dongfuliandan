@@ -1,0 +1,505 @@
+/* ============================================================
+ * data/ingredients/2d/codex.css — 图鉴(书样式 v2)
+ *
+ * 调整:
+ *   - 顶部一行:标题 + 翻页 + 页码 + 关闭(不单独占底部)
+ *   - 左页图片:内边距 + 限最大尺寸 + 严格 object-fit contain
+ * ============================================================ */
+
+.codex-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+}
+
+.codex-panel.hidden { display: none; }
+
+.codex-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.codex-book {
+  position: relative;
+  width: 92vw;
+  max-width: 1080px;
+  height: 84vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #2a1a0e, #1a0e08);
+  border: 2px solid #b8860b;
+  border-radius: 8px;
+  box-shadow:
+    0 0 50px rgba(212, 175, 55, 0.4),
+    inset 0 0 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+/* ============== 顶部工具栏(标题 + 翻页 + 关闭) ============== */
+
+.codex-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid #b8860b;
+  background: linear-gradient(90deg, #3a2014, #2d1810);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.codex-header h2 {
+  color: #d4af37;
+  font-size: 20px;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+  margin: 0;
+  letter-spacing: 3px;
+  flex-shrink: 0;
+}
+
+.codex-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.codex-btn {
+  background: linear-gradient(180deg, #5a3a1a, #3a2010);
+  border: 1px solid #b8860b;
+  color: #d4af37;
+  width: 32px;
+  height: 32px;
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s;
+}
+.codex-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #7a4a2a, #5a3a1a);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+}
+.codex-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.codex-page-no {
+  color: #d4af37;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.codex-close {
+  background: transparent;
+  border: 1px solid #b8860b;
+  color: #d4af37;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+.codex-close:hover {
+  background: #d4af37;
+  color: #1a0e08;
+}
+
+/* ============== 两页布局 ============== */
+
+.codex-page {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 14px 1fr;
+  background: linear-gradient(90deg, #3a2a18 0%, #2a1a10 50%, #3a2a18 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.codex-page.flipping {
+  opacity: 0.4;
+  transform: scale(0.985);
+  transition: opacity 0.18s, transform 0.18s;
+}
+
+/* --- 左页(图,带内边距 + 限大小) --- */
+
+.page-left {
+  padding: 36px 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+}
+
+/* 外层 frame:提供"古籍内嵌画框"感 */
+.page-image-frame {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border: 1px solid rgba(184, 134, 11, 0.4);
+  border-radius: 6px;
+  background:
+    linear-gradient(135deg, rgba(184, 134, 11, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
+  box-shadow:
+    inset 0 0 24px rgba(0, 0, 0, 0.6),
+    0 2px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+/* 内层 wrap:固定 4:3 比例(九品图片 800x600 的尺寸),低品图片按比例缩放不撑出框 */
+.page-image-wrap {
+  width: 320px;
+  aspect-ratio: 4 / 3;       /* 九品 4:3 */
+  max-width: 100%;
+  max-height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: transform 0.2s;
+}
+.page-image-wrap:hover {
+  transform: scale(1.02);
+}
+.page-image-wrap:hover .page-image-hint {
+  opacity: 1;
+}
+.page-image-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #d4af37;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  letter-spacing: 1px;
+  border: 1px solid rgba(184, 134, 11, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.page-image,
+.page-image-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  max-width: 320px;
+  max-height: 240px;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* 角装饰(古籍感) */
+.page-image-frame::before,
+.page-image-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d4af37;
+  opacity: 0.5;
+}
+.page-image-frame::before {
+  top: 4px;
+  left: 4px;
+  border-right: none;
+  border-bottom: none;
+}
+.page-image-frame::after {
+  bottom: 4px;
+  right: 4px;
+  border-left: none;
+  border-top: none;
+}
+
+.page-tier-badge {
+  font-size: 13px;
+  color: #d4af37;
+  letter-spacing: 4px;
+  padding: 4px 14px;
+  border: 1px solid #b8860b;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);
+  flex-shrink: 0;
+}
+
+/* --- 中央书脊 --- */
+
+.page-spine {
+  background: linear-gradient(90deg,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 70%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  position: relative;
+}
+.page-spine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(184, 134, 11, 0.5);
+}
+
+/* --- 右页(文字) --- */
+
+.page-right {
+  padding: 32px 36px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.page-name {
+  color: #d4af37;
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  border-bottom: 1px dashed rgba(184, 134, 11, 0.6);
+  padding-bottom: 10px;
+  letter-spacing: 4px;
+}
+
+.page-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.meta-label {
+  color: #8a7a5a;
+  min-width: 40px;
+  letter-spacing: 1px;
+}
+
+.meta-value {
+  color: #e8d9b0;
+  letter-spacing: 1px;
+}
+
+.page-color-row {
+  display: flex;
+  gap: 4px;
+}
+
+.page-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.page-desc {
+  color: #d4c89a;
+  font-size: 15px;
+  line-height: 1.8;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 2px solid #b8860b;
+  margin: 4px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.page-grade-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.page-grade-bar {
+  display: flex;
+  gap: 3px;
+}
+
+.grade-mark {
+  width: 14px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(184, 134, 11, 0.5);
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.grade-mark.on {
+  background: linear-gradient(180deg, #fff8d0, #d4af37);
+  border-color: #d4af37;
+  box-shadow: 0 0 6px #d4af37;
+}
+
+.page-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(184, 134, 11, 0.3);
+}
+
+.page-actions button {
+  flex: 1;
+  background: linear-gradient(180deg, #5a3a1a, #3a2010);
+  border: 1px solid #b8860b;
+  color: #d4af37;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.page-actions button:hover {
+  background: linear-gradient(180deg, #7a4a2a, #5a3a1a);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.empty-page {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a7a5a;
+  font-size: 18px;
+  letter-spacing: 4px;
+}
+
+/* ============== 3D 预览弹窗(在图鉴之上) ============== */
+
+.codex-3d-preview {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 75vw;
+  max-width: 900px;
+  height: 78vh;
+  max-height: 640px;
+  background: linear-gradient(180deg, #1a0e08, #2d1810);
+  border: 2px solid #b8860b;
+  border-radius: 12px;
+  box-shadow: 0 0 60px rgba(212, 175, 55, 0.5);
+  z-index: 10000;   /* 比 .codex-panel(9999) 高 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.codex-3d-preview.hidden { display: none; }
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #b8860b;
+  background: linear-gradient(90deg, #2d1810, #3a2014);
+  flex-shrink: 0;
+}
+
+.preview-header h3 {
+  color: #d4af37;
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+}
+
+.preview-canvas-container {
+  flex: 1;
+  position: relative;
+  background: #000;
+  min-height: 0;
+}
+
+#preview-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.preview-info {
+  padding: 10px 20px;
+  border-top: 1px solid #b8860b;
+  background: rgba(0, 0, 0, 0.3);
+  color: #d4c89a;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ============== 响应式:窄屏堆叠 ============== */
+@media (max-width: 720px) {
+  .codex-book {
+    height: 92vh;
+  }
+  .codex-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1px 1fr;
+  }
+  .page-spine {
+    background: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(0, 0, 0, 0) 30%,
+      rgba(0, 0, 0, 0) 70%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
+  }
+  .page-spine::before {
+    top: 50%;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 1px;
+  }
+  .page-left { padding: 16px; }
+  .page-right { padding: 16px; }
+  .page-name { font-size: 22px; }
+}

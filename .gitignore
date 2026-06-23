@@ -1,0 +1,43 @@
+# ============================================================
+# .gitignore — 不进 git 的东西
+# ============================================================
+
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+.vite/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 本地环境
+.env
+.env.local
+.env.*.local
+
+# 系统临时
+.tmp/
+tmp/
+
+# 截图/调试输出
+_output/
+screenshot.png
+*.tmp
