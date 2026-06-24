@@ -75,9 +75,9 @@ export const PLANTS = [
     geomShape: 'glb-model',
     modelFile: '/models/hundunlingzhi.glb',
     image: '/herb/混沌灵芝.webp',
-    colorHex: '#7B2CBF',
-    accentHex: '#3C1361',
-    fxColors: ['#7B2CBF', '#9D4EDD', '#D0A040', '#E0AAFF', '#FFFFFF', '#3C1361'],
+    colorHex: '#DC143C',
+    accentHex: '#4A0000',
+    fxColors: ['#DC143C', '#FF6B6B', '#D0A040', '#FFFFFF', '#FFB3B3', '#4A0000'],
     imageNatural: { w: 800, h: 600 }
   },
 

@@ -60,7 +60,8 @@ export class Cave {
     this.group.add(floor);
   }
 
-  /** 洞壁:14 个岩柱围成环,每个做扰动 */
+  /** 洞壁:14 个岩柱围成环,每个做扰动
+   *  在 +Z 方向留一个门口开口(角度约 ±0.25 弧度) */
   _buildWalls() {
     const wallMat = new THREE.MeshStandardMaterial({
       color: 0x8a7460,
@@ -69,9 +70,15 @@ export class Cave {
     });
     const count = 14;
     const radius = 7.5;
+    // 门口开口角度(在 +Z 方向,即 0 弧度附近)
+    const doorHalfAngle = 0.28;  // 大约 ±16°,够 3 米宽的门
 
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
+      // 跳过门口范围的柱子
+      const normalizedAngle = Math.atan2(Math.sin(angle), Math.cos(angle));
+      if (Math.abs(normalizedAngle) < doorHalfAngle) continue;
+
       // 每根柱子:2x4x2 的盒子,做顶点扰动
       const geo = new THREE.BoxGeometry(2, 4, 2, 2, 3, 2);
       const pos = geo.attributes.position;
@@ -107,6 +114,41 @@ export class Cave {
       m.rotation.y = Math.random() * Math.PI;
       this.group.add(m);
     }
+
+    // 门口石拱(装饰开口边缘)
+    this._buildDoorArch(radius, doorHalfAngle);
+  }
+
+  /** 门口石拱 + 门柱 */
+  _buildDoorArch(radius, doorHalfAngle) {
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0x7a6850,
+      roughness: 0.95,
+      flatShading: true
+    });
+
+    // 两根大石柱在门口两侧
+    for (const sign of [-1, 1]) {
+      const x = Math.sin(doorHalfAngle) * radius;
+      const z = Math.cos(doorHalfAngle) * radius;
+      const pillar = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 4.5, 0.8),
+        stoneMat
+      );
+      pillar.position.set(sign * x, 2.25, z);
+      this.group.add(pillar);
+    }
+
+    // 顶部横梁
+    const beam = new THREE.Mesh(
+      new THREE.BoxGeometry(5.5, 0.6, 0.8),
+      stoneMat
+    );
+    beam.position.set(0, 4.5, Math.cos(doorHalfAngle) * radius - 0.1);
+    this.group.add(beam);
+
+    // 门楣上的小匾(留白给 CaveDoor 摆匾)
+    // 这里不放具体文字,留给 CaveDoor 在前面对齐
   }
 
   /** 洞顶:高高挂起的圆顶,藏在雾里不挡视线 */

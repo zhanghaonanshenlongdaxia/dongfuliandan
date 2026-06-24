@@ -1,0 +1,278 @@
+/* ============================================================
+ * ui/env-control.css — 时段 + 天气控制面板
+ * 右上角浮动小窗,与图鉴风格统一
+ * ============================================================ */
+
+.env-control {
+  position: fixed;
+  bottom: 14px;
+  left: 14px;
+  z-index: 9000;
+  width: 260px;
+  background: linear-gradient(180deg, rgba(26, 14, 8, 0.92), rgba(13, 7, 4, 0.92));
+  border: 1px solid #b8860b;
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(184, 134, 11, 0.2);
+  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+  color: #e8d9b0;
+  user-select: none;
+  backdrop-filter: blur(4px);
+}
+
+/* 折叠状态:只显示一个按钮 */
+.env-control.collapsed {
+  width: auto;
+  padding: 6px 10px;
+}
+.env-control.collapsed > *:not(.env-toggle-collapse) {
+  display: none;
+}
+.env-toggle-collapse {
+  background: linear-gradient(180deg, #5a3a1a, #3a2010);
+  border: 1px solid #b8860b;
+  color: #d4af37;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.env-toggle-collapse:hover {
+  background: linear-gradient(180deg, #7a4a2a, #5a3a1a);
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.3);
+}
+.env-toggle-collapse .env-badge {
+  background: rgba(212, 175, 55, 0.3);
+  color: #fff8c0;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-family: monospace;
+}
+
+.env-title {
+  font-size: 14px;
+  color: #d4af37;
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 4px;
+  text-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+  border-bottom: 1px dashed rgba(184, 134, 11, 0.4);
+  padding-bottom: 8px;
+}
+
+.env-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.env-row:last-child {
+  margin-bottom: 0;
+}
+
+.env-label {
+  flex: 1;
+  font-size: 14px;
+  color: #d4af37;
+  letter-spacing: 2px;
+}
+
+.env-hour {
+  font-size: 12px;
+  color: #8a7a5a;
+  min-width: 50px;
+  text-align: right;
+  font-family: monospace;
+}
+
+.env-btn-toggle {
+  background: linear-gradient(180deg, #5a3a1a, #3a2010);
+  border: 1px solid #b8860b;
+  color: #d4af37;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.env-btn-toggle:hover {
+  background: linear-gradient(180deg, #7a4a2a, #5a3a1a);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.env-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: linear-gradient(90deg, #1a1a3a 0%, #ffaa44 50%, #1a1a3a 100%);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.env-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle, #fff8c0, #d4af37);
+  border: 1px solid #b8860b;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.5);
+}
+.env-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle, #fff8c0, #d4af37);
+  border: 1px solid #b8860b;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.5);
+}
+
+.env-weather {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.env-wbtn {
+  background: linear-gradient(180deg, #3a2010, #2a1808);
+  border: 1px solid rgba(184, 134, 11, 0.5);
+  color: #8a7a5a;
+  padding: 6px 2px;
+  font-size: 12px;
+  font-family: inherit;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0;
+}
+.env-wbtn:hover {
+  color: #d4af37;
+  border-color: #b8860b;
+}
+.env-wbtn.active {
+  background: linear-gradient(180deg, #7a4a2a, #5a3a1a);
+  color: #fff8c0;
+  border-color: #d4af37;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+}
+
+/* ============ 雪量面板 ============ */
+.env-divider {
+  margin: 10px 0 6px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(184, 134, 11, 0.4);
+  font-size: 13px;
+  color: #d4af37;
+  letter-spacing: 4px;
+  text-align: center;
+  text-shadow: 0 0 4px rgba(212, 175, 55, 0.3);
+}
+
+.env-snow-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(20, 14, 8, 0.6);
+  border: 1px solid rgba(184, 134, 11, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.env-snow-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #88aaff 0%, #cce8ff 60%, #ffffff 100%);
+  transition: width 0.3s;
+  box-shadow: 0 0 6px rgba(200, 220, 255, 0.5);
+}
+.env-snow-pct {
+  font-size: 12px;
+  color: #cce8ff;
+  min-width: 36px;
+  text-align: right;
+  font-family: monospace;
+}
+
+.env-snow-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-top: 2px;
+}
+.env-sbtn {
+  background: linear-gradient(180deg, #2a3550, #1a2440);
+  border: 1px solid #4a5a7a;
+  color: #aabbdd;
+  padding: 5px 2px;
+  font-size: 11px;
+  font-family: inherit;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.env-sbtn:hover {
+  background: linear-gradient(180deg, #3a4570, #2a3560);
+  color: #ddeeff;
+  border-color: #6a7a9a;
+  box-shadow: 0 0 4px rgba(100, 150, 220, 0.3);
+}
+
+/* ============ 控制提示(右下角) ============ */
+.control-hint {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  z-index: 8500;
+  background: rgba(26, 14, 8, 0.75);
+  border: 1px solid rgba(184, 134, 11, 0.5);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'STKaiti', 'KaiTi', '楷体', serif;
+  color: #d4af37;
+  user-select: none;
+  font-size: 12px;
+  letter-spacing: 1px;
+  backdrop-filter: blur(4px);
+}
+.ch-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.6;
+}
+.ch-row span {
+  color: #c8b890;
+}
+.ch-mouse {
+  font-size: 14px;
+}
+.control-hint kbd {
+  display: inline-block;
+  min-width: 18px;
+  padding: 2px 5px;
+  background: linear-gradient(180deg, #5a3a1a, #3a2010);
+  border: 1px solid #b8860b;
+  border-radius: 3px;
+  color: #fff8c0;
+  font-family: monospace;
+  font-size: 11px;
+  text-align: center;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}

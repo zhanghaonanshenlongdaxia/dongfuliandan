@@ -209,10 +209,13 @@ export class Ingredient3D {
         }
       });
 
-      // 4. 替换占位:删除所有子,加上真实模型
+      // 4. 替换占位 — 只删占位和旧模型,**特效(aura/rings/baseDisc/crown)留着**
       //    保留 group.userData(光晕、旋转粒子等装饰)
-      while (group.children.length > 0) {
-        group.remove(group.children[0]);
+      for (let i = group.children.length - 1; i >= 0; i--) {
+        const child = group.children[i];
+        if (child.userData?._isGlbPlaceholder || child === group.userData._glbModel) {
+          group.remove(child);
+        }
       }
       group.add(model);
       group.userData._isGlbPlaceholder = false;
@@ -312,9 +315,12 @@ export class Ingredient3D {
       model.position.y = -box.min.y * scale;
       model.position.z = -center.z * scale;
 
-      // 6. 替换占位
-      while (group.children.length > 0) {
-        group.remove(group.children[0]);
+      // 6. 替换占位 — 只删占位和旧模型,**特效(aura/rings/baseDisc/crown)留着**
+      for (let i = group.children.length - 1; i >= 0; i--) {
+        const child = group.children[i];
+        if (child.userData?._isGlbPlaceholder || child === group.userData._glbModel) {
+          group.remove(child);
+        }
       }
       group.add(model);
       group.userData._isGlbPlaceholder = false;

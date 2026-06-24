@@ -27,6 +27,15 @@ import { Environment } from '../scene/Environment.js';
 import { Postprocessing } from '../scene/Postprocessing.js';
 import { HangingVine } from '../scene/HangingVine.js';
 import { Pollen } from '../scene/Pollen.js';
+import { TimeOfDay } from '../scene/TimeOfDay.js';
+import { Sky } from '../scene/Sky.js';
+import { Sun } from '../scene/Sun.js';
+import { Weather } from '../scene/Weather.js';
+import { Distant } from '../scene/Distant.js';
+import { CaveDoor } from '../scene/CaveDoor.js';
+import { SnowAccumulation } from '../scene/SnowAccumulation.js';
+import { Mountain } from '../scene/Mountain.js';
+import { EnvControl } from '../ui/EnvControl.js';
 
 import { RefineStateMachine, EVENTS, STATES } from './RefineStateMachine.js';
 import { Inventory } from '../ui/inventory.js';
@@ -64,38 +73,95 @@ export class Game {
 
   _initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x1a0e08);
-    this.scene.fog = new THREE.Fog(0x1a0e08, 10, 32);
+    // 不再设 background,由 Sky 接管
+    // 雾:用 FogExp2(指数雾),颜色和密度由 TimeOfDay + Weather 实时更新
+    this.scene.fog = new THREE.FogExp2(0xffd0a0, 0.012);
   }
 
   _initCamera() {
     const aspect = (window.innerWidth - 340) / window.innerHeight;
-    this.camera = new THREE.PerspectiveCamera(55, aspect, 0.1, 100);
-    this.camera.position.set(3.8, 2.6, 4.6);
-    this.camera.lookAt(0, 1.2, 0);
+    this.camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 500);
+    // 位置在 _initWorld 里 Monk 创建后再设置(monk 此时还不存在)
+    this.camera.position.set(0, 5, 10);
   }
 
   _initControls() {
     this.controls = new OrbitControls(this.camera, this.canvas);
-    this.controls.target.set(0, 1.2, 0);
+    // target 先设到 (0,0,0),等 Monk 创建后再跟随(在 _initWorld 里)
+    this.controls.target.set(0, 0, 0);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.08;
-    this.controls.enablePan = false;
-    this.controls.minDistance = 2.8;
-    this.controls.maxDistance = 6.5;
-    this.controls.minPolarAngle = Math.PI * 0.28;
-    this.controls.maxPolarAngle = Math.PI * 0.52;
-    this.controls.minAzimuthAngle = -Math.PI * 0.7;
-    this.controls.maxAzimuthAngle = Math.PI * 0.7;
+    this.controls.dampingFactor = 0.06;
+    this.controls.enablePan = false;   // 禁止平移(永远跟着 Monk)
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 30;
+    // 极角:第三人称,不能完全俯视/仰视
+    this.controls.minPolarAngle = 0.2;
+    this.controls.maxPolarAngle = Math.PI * 0.49;
+    // 方位角:全 360°
+    this.controls.minAzimuthAngle = -Infinity;
+    this.controls.maxAzimuthAngle = Infinity;
   }
 
   _initWorld() {
+    // ============== 时段系统(其他模块的颜色都来自这里) ==============
+    this.timeOfDay = new TimeOfDay();
+    // 默认:黄昏(波洛雪夜山庄那种)
+    this.timeOfDay.setHour(17.3);
+    this.timeOfDay.pause();   // 暂停循环,玩家想快进再开
+
+    // ============== 天空 + 太阳(基于时段) ==============
+    this.sky = new Sky(250);
+    this.scene.add(this.sky.group);
+
+    this.sun = new Sun(120);
+    this.scene.add(this.sun.group);
+
+    // ============== 远景:山轮廓 + 大雁 ==============
+    this.distant = new Distant();
+    this.scene.add(this.distant.group);
+    // 藏掉近层山(被下面的真实 Mountain 替代)
+    if (this.distant.mountainNear) this.distant.mountainNear.visible = false;
+
+    // ============== 天气(默认下雪) ==============
+    this.weather = new Weather(this.scene);
+    this.weather.setType('snow');
+    // 第一次同步雾色
+    this.weather.applyFog(this.scene, this.timeOfDay);
+
+    // ============== 洞府(在原点,门口朝 +X) ==============
     this.cave = new Cave();
     this.scene.add(this.cave.group);
 
+    // 洞口大山门(在 +X 方向,门口朝 +X,默认半开)
+    this.caveDoor = new CaveDoor({
+      position: new THREE.Vector3(7.0, 0, 0),
+      lookOut: new THREE.Vector3(1, 0, 0),
+      openAngle: 0.7   // 半开
+    });
+    this.scene.add(this.caveDoor.group);
+
+    // ============== 仙山(Blender 导出的程序化山体) ==============
+    this.mountain = new Mountain();
+    this.scene.add(this.mountain.group);
+
+    // ============== 院落地面(洞口外的石板地) ==============
+    const courtyardRefs = this._buildCourtyard();
+
+    // ============== 雪累积系统(平台/门/墙/堆雪) ==============
+    this.snowAccum = new SnowAccumulation({
+      scene: this.scene,
+      platform: courtyardRefs.platform,
+      snowWall: null,
+      caveDoorGroup: this.caveDoor.group,
+      pillarPositions: courtyardRefs.pillars,
+      speed: 0.005
+    });
+
+    // ============== 灯光(基于时段调强度) ==============
     this.lighting = new Lighting();
     this.scene.add(this.lighting.group);
 
+    // ============== 洞内物件(在原点的洞里) ==============
     this.furnace = new Furnace();
     this.scene.add(this.furnace.group);
 
@@ -105,24 +171,36 @@ export class Game {
     this.smoke = new Smoke();
     this.scene.add(this.smoke.group);
 
-    // 道士(默认用过程化身体,如果有 .glb 模型会被替换)
+    // 道士
     this.monk = new Monk();
-    this.monk.group.position.set(2.0, 0, 0.4);
-    this.monk.group.rotation.y = Math.PI / 2;   // 过程化身体面朝 -X(丹炉方向)
+    this.monk.group.position.set(-2.0, 0, 0.4);
+    this.monk.group.rotation.y = -Math.PI / 2;  // 面向 +X(洞口方向)
     this.scene.add(this.monk.group);
 
-    // 洞府装饰(家具、烛台、葫芦、书架、魔法阵)
+    // ===== 相机拉到 Monk 背后(第三人称) =====
+    // Monk 在 (-2, 0, 0.4),面朝 +X,相机放在 -X 方向
+    this.camera.position.set(
+      this.monk.group.position.x - 5,
+      this.monk.group.position.y + 3,
+      this.monk.group.position.z + 0.5
+    );
+    this.camera.lookAt(this.monk.group.position);
+    // 让 OrbitControls target 指向 Monk(target 跟随)
+    if (this.controls) this.controls.target.copy(this.monk.group.position);
+    // 控制提示(右下角小窗)
+    this._initControlHint();
+
+    // 洞府装饰
     this.decor = new Decor();
     this.scene.add(this.decor.group);
 
-    // 垂藤草:挂在洞府后方高处,垂直垂下(叶子会摆动)
+    // 垂藤草
     this.hangingVine = new HangingVine({
       length: 2.5,
       origin: new THREE.Vector3(-1.8, 4.5, -2.5)
     });
     this.scene.add(this.hangingVine.group);
 
-    // 飘浮粒子(在垂藤草周围发光漂浮)
     this.pollen = new Pollen({
       center: new THREE.Vector3(-1.8, 3.0, -2.5),
       count: 45,
@@ -130,6 +208,129 @@ export class Game {
       height: 3.0
     });
     this.scene.add(this.pollen.group);
+
+    // ============== 第一次同步时段 → 灯光/天空/太阳/雾 ==============
+    this._applyTimeOfDay();
+
+    // ============== 右上角时段 + 天气控制面板 ==============
+    this.envControl = new EnvControl({
+      timeOfDay: this.timeOfDay,
+      weather: this.weather,
+      scene: this.scene,
+      snowAccum: this.snowAccum
+    });
+  }
+
+  /** 简单的控制提示 */
+  _initControlHint() {
+    const hint = document.createElement('div');
+    hint.className = 'control-hint';
+    hint.innerHTML = `
+      <div class="ch-row"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>移动人物</span></div>
+      <div class="ch-row"><span class="ch-mouse">🖱</span><span>拖动旋转 · 滚轮缩放</span></div>
+    `;
+    document.body.appendChild(hint);
+  }
+
+  /** 院落:洞口外的石板平台 + 雪堆 + 装饰石 + 下山小径(被雪堵)
+   *  返回 { platform, snowWall, pillars } 给 SnowAccumulation 用 */
+  _buildCourtyard() {
+    const group = new THREE.Group();
+    group.name = 'Courtyard';
+
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0x7a7060, roughness: 0.95, flatShading: true
+    });
+    const snowMat = new THREE.MeshStandardMaterial({
+      color: 0xeeeeff, roughness: 0.6, metalness: 0.05,
+      flatShading: true
+    });
+
+    // 石板地(圆形,匹配山顶平台) — 用 CylinderGeometry 替代 BoxGeometry
+    const platformRadius = 7;  // 山的平台 radius=6,扩 1 单位做院子
+    const platform = new THREE.Mesh(
+      new THREE.CylinderGeometry(platformRadius, platformRadius, 0.3, 48),
+      stoneMat
+    );
+    platform.position.set(12, -0.15, 0);  // 洞口在 x=7.5,平台往 +X
+    platform.receiveShadow = false;
+    group.add(platform);
+
+    // 平台上的薄雪(很薄,贴平台顶面)
+    const snowLayer = new THREE.Mesh(
+      new THREE.CylinderGeometry(platformRadius - 0.1, platformRadius - 0.1, 0.04, 48),
+      snowMat
+    );
+    snowLayer.position.set(12, 0.005, 0);  // 几乎贴平台顶面(y=0)
+    group.add(snowLayer);
+
+    // 平台边缘的栏杆/矮柱(装饰)
+    const pillars = [];
+    for (const z of [-5, 5]) {
+      const post = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.22, 1.0, 6),
+        stoneMat
+      );
+      post.position.set(17, 0.5, z);
+      group.add(post);
+      pillars.push({ x: 17, z });
+      // 柱顶雪
+      const cap = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.5),
+        snowMat
+      );
+      cap.position.set(17, 1.05, z);
+      group.add(cap);
+    }
+
+    // 几个大石块(点缀)
+    for (let i = 0; i < 4; i++) {
+      const stone = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.3, 0),
+        stoneMat
+      );
+      const angle = (i / 4) * Math.PI * 2 + Math.random() * 0.5;
+      const r = 4 + Math.random() * 1.5;
+      stone.position.set(12 + r, 0.3, Math.sin(angle) * r * 0.7);
+      stone.rotation.set(Math.random(), Math.random(), Math.random());
+      group.add(stone);
+    }
+
+    // =========== 下山小径 + 大雪墙 — 山的表面就是路,都不要了 ===========
+
+    // 平台边缘的积雪堆
+    for (let i = 0; i < 6; i++) {
+      const drift = new THREE.Mesh(
+        new THREE.SphereGeometry(0.4 + Math.random() * 0.3, 6, 5),
+        snowMat
+      );
+      drift.position.set(
+        8 + i * 1.5 + Math.random() * 0.5,
+        0.2 + Math.random() * 0.3,
+        -6 + Math.random() * 12
+      );
+      drift.scale.y = 0.5;
+      group.add(drift);
+    }
+
+    this.scene.add(group);
+    this.courtyard = group;
+
+    // 返回引用给 SnowAccumulation(snowWall 改成 null,山的表面是路)
+    return { platform, snowWall: null, pillars };
+  }
+
+  /** 把 TimeOfDay 的环境参数应用到天空/太阳/雾 */
+  _applyTimeOfDay() {
+    const env = this.timeOfDay.getEnvironment();
+    // 雾
+    this.scene.fog.color.copy(env.fogColor);
+    this.scene.fog.density = env.fogDensity;
+    // 太阳强度
+    if (this.sun) {
+      // Sun 自己在 update() 里调位置,这里给光强
+      this.sun.disk.material.opacity = 1.0;
+    }
   }
 
   _initPostprocessing() {
@@ -419,6 +620,67 @@ export class Game {
       this.renderer.setSize(w, h);
       this.post.setSize(w, h);
     });
+
+    // ===== 人物控制:WASD =====
+    this._keys = { w: false, a: false, s: false, d: false };
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (k in this._keys) this._keys[k] = true;
+    });
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (k in this._keys) this._keys[k] = false;
+    });
+    // 失去焦点时松开所有键
+    window.addEventListener('blur', () => {
+      for (const k in this._keys) this._keys[k] = false;
+    });
+  }
+
+  /**
+   * 人物控制:WASD 移动 Monk(相对相机方向)
+   * OrbitControls target 跟随 Monk,鼠标拖动可以环视
+   * 边界:不能走出山外(距原点 < 35)
+   */
+  _updateCharacterControl(dt) {
+    const speed = 4.0;  // 单位/秒
+    const move = new THREE.Vector3();
+
+    // 相机前方向(XZ 平面投影)
+    const forward = new THREE.Vector3();
+    this.camera.getWorldDirection(forward);
+    forward.y = 0;
+    forward.normalize();
+
+    // 相机右方向
+    const right = new THREE.Vector3();
+    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+    if (this._keys.w) move.add(forward);
+    if (this._keys.s) move.sub(forward);
+    if (this._keys.d) move.add(right);
+    if (this._keys.a) move.sub(right);
+
+    if (move.lengthSq() > 0) {
+      move.normalize().multiplyScalar(speed * dt);
+      const newPos = this.monk.group.position.clone().add(move);
+
+      // 边界:不能走出山(距原点 < 35)
+      const distFromCenter = Math.sqrt(newPos.x * newPos.x + newPos.z * newPos.z);
+      if (distFromCenter < 35) {
+        this.monk.group.position.add(move);
+        // 人物朝向移动方向
+        this.monk.group.rotation.y = Math.atan2(move.x, move.z);
+        // 走路动画(fan 表示扇火,idle 是默认;可以复用 fan 表达"走")
+        this.monk.setGesture('fan');
+      }
+    } else {
+      // 静止时回 idle
+      this.monk.setGesture('idle');
+    }
+
+    // 相机和 OrbitControls 跟着 Monk
+    this.controls.target.copy(this.monk.group.position);
   }
 
   // ---------- 主循环 ----------
@@ -429,11 +691,26 @@ export class Game {
 
       this.sm.tick(dt);
 
+      // ============ 时段 / 天气 / 环境 ============
+      this.timeOfDay.tick(dt);
+      this.weather.tick(dt);
+      this.sky.update(this.timeOfDay);
+      this.sun.update(this.timeOfDay);
+      this.weather.applyFog(this.scene, this.timeOfDay);
+      this.distant.tick(dt);
+      this.caveDoor.tick(dt);
+      this.snowAccum.update(dt);
+      this.envControl.update();
+
+      // ============ 人物控制(WASD + 相机跟随) ============
+      this._updateCharacterControl(dt);
+
+      // ============ OrbitControls + 相机约束 ============
       this.controls.update();
-      // 相机 Y 硬限:防止飘到洞壁以上
-      if (this.camera.position.y > 3.5) {
-        this.camera.position.y = 3.5;
-      }
+      // 相机 Y 软上限:不让视角漂到地面下太多
+      if (this.camera.position.y < 0.5) this.camera.position.y = 0.5;
+
+      // ============ 场景物件 ============
       this.furnace.update(dt);
       this.fire.update(dt);
       this.lighting.update(dt);
