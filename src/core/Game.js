@@ -7,6 +7,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+
+// DRACOLoader 共享实例(用 Google CDN 托管的 decoder)
+// 加载压缩过的 GLB(被 scripts/compress-models.mjs 处理)需要它
+const _dracoLoader = new DRACOLoader();
+_dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+const _gltfLoader = new GLTFLoader();
+_gltfLoader.setDRACOLoader(_dracoLoader);
 
 import { Cave } from '../scene/Cave.js';
 import { Furnace } from '../scene/Furnace.js';
@@ -142,7 +150,8 @@ export class Game {
 
   /** 加载 /models/character.glb 作为人物(带骨骼动画) */
   async _tryLoadCharacterModel() {
-    const loader = new GLTFLoader();
+    // 用共享的 _gltfLoader(已配 DRACOLoader),支持压缩 GLB
+    const loader = _gltfLoader;
     try {
       const gltf = await loader.loadAsync('/models/character.glb');
       // 自动算 yOffset:让脚底贴在 y=0(很多模型脚底不在原点)

@@ -41,3 +41,8 @@ tmp/
 _output/
 screenshot.png
 *.tmp
+
+# 压缩前原文件备份(占空间,LFS 已去后没必要提交)
+public/models/.original/
+public/.original_png/
+public/models/*-small.*

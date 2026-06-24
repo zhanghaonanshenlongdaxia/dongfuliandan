@@ -17,9 +17,16 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 import { HangingVine } from '../../../scene/HangingVine.js';
+
+// 共享 DRACO + GLTF Loader(支持被 scripts/compress-models.mjs 压缩过的 GLB)
+const _dracoLoader = new DRACOLoader();
+_dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+const _gltfLoader = new GLTFLoader();
+_gltfLoader.setDRACOLoader(_dracoLoader);
 
 const COLOR_CACHE = new Map();
 function color(hex) {
@@ -28,7 +35,6 @@ function color(hex) {
 }
 
 // 共享的 Loader 实例
-const _gltfLoader = new GLTFLoader();
 const _objLoader = new OBJLoader();
 const _mtlLoader = new MTLLoader();
 
